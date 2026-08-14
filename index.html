@@ -11,7 +11,6 @@
 </head>
 <body>
   <div id="hud">
-    <!-- Top Bar -->
     <header class="top-bar">
       <div class="logo">
         <span class="logo-icon">⚡</span>
@@ -36,9 +35,7 @@
       </div>
     </header>
 
-    <!-- Main Layout -->
     <div class="main-layout">
-      <!-- Left Panel -->
       <aside class="panel left-panel">
         <section class="panel-section">
           <h2>GLOBAL OVERVIEW</h2>
@@ -55,12 +52,12 @@
             </div>
             <div class="stat-card">
               <span class="stat-label">Major Pipelines</span>
-              <span class="stat-value" id="stat-pipelines">12</span>
+              <span class="stat-value" id="stat-pipelines">17</span>
               <span class="stat-unit">tracked</span>
             </div>
             <div class="stat-card">
               <span class="stat-label">Refineries</span>
-              <span class="stat-value" id="stat-refineries">8</span>
+              <span class="stat-value" id="stat-refineries">12</span>
               <span class="stat-unit">key hubs</span>
             </div>
           </div>
@@ -94,7 +91,6 @@
         </section>
       </aside>
 
-      <!-- Map -->
       <main id="map-container">
         <div id="map"></div>
         <div class="map-overlay">
@@ -102,7 +98,6 @@
         </div>
       </main>
 
-      <!-- Right Panel / Detail -->
       <aside class="panel right-panel" id="detail-panel">
         <div id="detail-content">
           <div class="empty-state">
@@ -113,9 +108,8 @@
       </aside>
     </div>
 
-    <!-- Bottom Status -->
     <footer class="bottom-bar">
-      <span>THE KARDASHEV v0.1 • Data: EIA-style aggregates + curated infrastructure • For observation & analysis</span>
+      <span>THE KARDASHEV v0.2 • Improved visibility • Data: curated infrastructure</span>
       <span id="clock"></span>
     </footer>
   </div>

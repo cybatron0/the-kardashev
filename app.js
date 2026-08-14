@@ -1,4 +1,4 @@
-// THE KARDASHEV — Main Application Logic
+// THE KARDASHEV — Main Application Logic (v0.2 — visibility & density upgrade)
 
 let map;
 let layers = {
@@ -22,23 +22,29 @@ function init() {
   setInterval(updateClock, 1000);
 
   document.getElementById("btn-reset-view").addEventListener("click", () => {
-    map.setView([25, 20], 2);
+    map.setView([25, 20], 2.2);
   });
+
+  // Update stats with real counts
+  const pipeEl = document.getElementById("stat-pipelines");
+  const refEl = document.getElementById("stat-refineries");
+  if (pipeEl) pipeEl.textContent = PIPELINES.length;
+  if (refEl) refEl.textContent = REFINERIES.length;
 }
 
 function initMap() {
   map = L.map("map", {
     zoomControl: true,
-    attributionControl: false
-  }).setView([25, 20], 2);
+    attributionControl: false,
+    minZoom: 2,
+    maxZoom: 10
+  }).setView([25, 20], 2.2);
 
-  // Dark basemap
   L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
     maxZoom: 18,
     attribution: '&copy; OpenStreetMap &copy; CARTO'
   }).addTo(map);
 
-  // Add layer groups
   Object.values(layers).forEach(l => l.addTo(map));
 }
 
@@ -55,48 +61,76 @@ function renderTopProducers() {
 
 function renderPipelines() {
   PIPELINES.forEach(p => {
-    const color = p.type === "oil" ? "#ff8c00" : "#00bfff";
-    const weight = p.type === "oil" ? 3 : 2.5;
-    const polyline = L.polyline(p.coords, {
-      color,
-      weight,
-      opacity: 0.85,
-      lineCap: "round"
+    const isOil = p.type === "oil";
+    const mainColor = isOil ? "#ff9a1f" : "#00c8ff";
+    const glowColor = isOil ? "rgba(255, 140, 0, 0.4)" : "rgba(0, 180, 255, 0.4)";
+
+    // Wide glow underlay
+    const glow = L.polyline(p.coords, {
+      color: glowColor,
+      weight: 11,
+      opacity: 0.55,
+      lineCap: "round",
+      lineJoin: "round",
+      interactive: false
     });
 
-    polyline.bindPopup(`
-      <strong>${p.name}</strong><br>
-      Type: ${p.type.toUpperCase()} • ${p.status}<br>
-      Capacity: ${p.capacity}<br>
+    // Core line
+    const main = L.polyline(p.coords, {
+      color: mainColor,
+      weight: 4.5,
+      opacity: 0.95,
+      lineCap: "round",
+      lineJoin: "round"
+    });
+
+    main.bindPopup(`
+      <strong style="font-size:1rem">${p.name}</strong><br>
+      <span style="color:#7ab8d4">${p.type.toUpperCase()} • ${p.status}</span><br>
+      Capacity: <b>${p.capacity}</b><br>
       Length: ${p.length}<br>
       Operator: ${p.operator}
-    `);
+    `, { maxWidth: 280 });
 
-    polyline.on("click", () => showDetail(p, "pipeline"));
+    main.on("mouseover", function () {
+      this.setStyle({ weight: 7.5, opacity: 1 });
+      glow.setStyle({ weight: 16, opacity: 0.7 });
+    });
+    main.on("mouseout", function () {
+      this.setStyle({ weight: 4.5, opacity: 0.95 });
+      glow.setStyle({ weight: 11, opacity: 0.55 });
+    });
+    main.on("click", () => showDetail(p, "pipeline"));
 
-    if (p.type === "oil") {
-      layers.oilPipelines.addLayer(polyline);
+    if (isOil) {
+      layers.oilPipelines.addLayer(glow);
+      layers.oilPipelines.addLayer(main);
     } else {
-      layers.gasPipelines.addLayer(polyline);
+      layers.gasPipelines.addLayer(glow);
+      layers.gasPipelines.addLayer(main);
     }
   });
 }
 
-function createIcon(className) {
+function createIcon(type) {
+  const map = {
+    refinery: { bg: "#ff8c00", size: 16 },
+    field: { bg: "#ffcc00", size: 14 },
+    plant: { bg: "#00ff9d", size: 14 }
+  };
+  const c = map[type] || map.field;
   return L.divIcon({
-    className: "",
-    html: `<div class="${className}"></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7]
+    className: "custom-marker",
+    html: `<div class="marker-dot marker-${type}" style="background:${c.bg};width:${c.size}px;height:${c.size}px;"></div>`,
+    iconSize: [c.size, c.size],
+    iconAnchor: [c.size / 2, c.size / 2]
   });
 }
 
 function renderRefineries() {
   REFINERIES.forEach(r => {
-    const marker = L.marker([r.lat, r.lng], {
-      icon: createIcon("marker-refinery")
-    });
-    marker.bindPopup(`<strong>${r.name}</strong><br>${r.capacity}<br>${r.operator}`);
+    const marker = L.marker([r.lat, r.lng], { icon: createIcon("refinery") });
+    marker.bindPopup(`<strong>${r.name}</strong><br>${r.capacity}<br>${r.operator}<br>${r.country}`);
     marker.on("click", () => showDetail(r, "refinery"));
     layers.refineries.addLayer(marker);
   });
@@ -104,9 +138,7 @@ function renderRefineries() {
 
 function renderFields() {
   FIELDS.forEach(f => {
-    const marker = L.marker([f.lat, f.lng], {
-      icon: createIcon("marker-field")
-    });
+    const marker = L.marker([f.lat, f.lng], { icon: createIcon("field") });
     marker.bindPopup(`<strong>${f.name}</strong><br>${f.production}<br>${f.operator}`);
     marker.on("click", () => showDetail(f, "field"));
     layers.fields.addLayer(marker);
@@ -115,10 +147,8 @@ function renderFields() {
 
 function renderPlants() {
   POWER_PLANTS.forEach(p => {
-    const marker = L.marker([p.lat, p.lng], {
-      icon: createIcon("marker-plant")
-    });
-    marker.bindPopup(`<strong>${p.name}</strong><br>${p.capacity} • ${p.type}`);
+    const marker = L.marker([p.lat, p.lng], { icon: createIcon("plant") });
+    marker.bindPopup(`<strong>${p.name}</strong><br>${p.capacity} • ${p.type}<br>${p.country}`);
     marker.on("click", () => showDetail(p, "plant"));
     layers.plants.addLayer(marker);
   });
@@ -135,12 +165,10 @@ function bindLayerToggles() {
 
   Object.entries(toggles).forEach(([id, layer]) => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.addEventListener("change", () => {
-      if (el.checked) {
-        map.addLayer(layer);
-      } else {
-        map.removeLayer(layer);
-      }
+      if (el.checked) map.addLayer(layer);
+      else map.removeLayer(layer);
     });
   });
 }
@@ -153,7 +181,7 @@ function showDetail(asset, kind) {
     title = asset.name;
     badge = asset.type.toUpperCase() + " PIPELINE";
     meta = `
-      <span>Status: ${asset.status}</span>
+      <span>Status: <b>${asset.status}</b></span>
       <span>Operator: ${asset.operator}</span>
       <span>Countries: ${asset.countries.join(", ")}</span>
     `;
@@ -188,7 +216,7 @@ function showDetail(asset, kind) {
     chartLabel = "Historical Output (illustrative)";
   } else {
     title = asset.name;
-    badge = asset.type.toUpperCase() + " PLANT";
+    badge = (asset.type || "POWER").toUpperCase() + " PLANT";
     meta = `<span>Country: ${asset.country}</span>`;
     statsHtml = `
       <div class="detail-stat"><div class="label">Capacity</div><div class="value">${asset.capacity}</div></div>
@@ -209,17 +237,16 @@ function showDetail(asset, kind) {
       <canvas id="detail-chart"></canvas>
     </div>
     <p style="font-size:0.7rem;color:var(--text-dim);margin-top:1rem;">
-      Data is curated for THE KARDASHEV MVP. Live feeds (EIA, GEM, Ember) can be integrated next.
+      Curated data for THE KARDASHEV. Live EIA / GEM / Ember feeds planned.
     </p>
   `;
 
-  // Simple illustrative chart
   setTimeout(() => {
     const ctx = document.getElementById("detail-chart");
     if (!ctx) return;
     if (currentChart) currentChart.destroy();
 
-    const historyKey = asset.country || asset.countries?.[0] || "default";
+    const historyKey = asset.country || (asset.countries && asset.countries[0]) || "default";
     const data = SAMPLE_HISTORY[historyKey] || SAMPLE_HISTORY.default;
 
     currentChart = new Chart(ctx, {
@@ -230,31 +257,30 @@ function showDetail(asset, kind) {
           label: "Index",
           data: data,
           borderColor: "#00e5ff",
-          backgroundColor: "rgba(0, 229, 255, 0.1)",
+          backgroundColor: "rgba(0, 229, 255, 0.12)",
           fill: true,
-          tension: 0.3,
-          pointRadius: 3
+          tension: 0.35,
+          pointRadius: 3.5,
+          pointBackgroundColor: "#00e5ff"
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false }
-        },
+        plugins: { legend: { display: false } },
         scales: {
           x: {
             ticks: { color: "#7ab8d4", font: { size: 10 } },
-            grid: { color: "rgba(0, 100, 150, 0.2)" }
+            grid: { color: "rgba(0, 100, 150, 0.15)" }
           },
           y: {
             ticks: { color: "#7ab8d4", font: { size: 10 } },
-            grid: { color: "rgba(0, 100, 150, 0.2)" }
+            grid: { color: "rgba(0, 100, 150, 0.15)" }
           }
         }
       }
     });
-  }, 50);
+  }, 40);
 }
 
 function updateClock() {
@@ -263,5 +289,4 @@ function updateClock() {
     now.toUTCString().replace("GMT", "UTC");
 }
 
-// Boot
 document.addEventListener("DOMContentLoaded", init);

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE KARDASHEV — Global Energy Intelligence</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <div id="hud">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <div>
+          <h1>THE KARDASHEV</h1>
+          <p class="tagline">Planetary Energy Intelligence System</p>
+        </div>
+      </div>
+      <div class="status-indicators">
+        <div class="status-item">
+          <span class="label">CIVILIZATION TYPE</span>
+          <span class="value" id="kardashev-type">0.73</span>
+        </div>
+        <div class="status-item">
+          <span class="label">GLOBAL OIL</span>
+          <span class="value" id="global-oil">~100 Mb/d</span>
+        </div>
+        <div class="status-item">
+          <span class="label">SYSTEM</span>
+          <span class="value online">ONLINE</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+      <!-- Left Panel -->
+      <aside class="panel left-panel">
+        <section class="panel-section">
+          <h2>GLOBAL OVERVIEW</h2>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <span class="stat-label">Oil Production</span>
+              <span class="stat-value" id="stat-oil">100.4</span>
+              <span class="stat-unit">Mb/d</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Top Producer</span>
+              <span class="stat-value small">United States</span>
+              <span class="stat-unit">~21.1 Mb/d</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Major Pipelines</span>
+              <span class="stat-value" id="stat-pipelines">12</span>
+              <span class="stat-unit">tracked</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Refineries</span>
+              <span class="stat-value" id="stat-refineries">8</span>
+              <span class="stat-unit">key hubs</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>LAYERS</h2>
+          <div class="layer-controls">
+            <label><input type="checkbox" id="layer-oil-pipelines" checked /> Oil Pipelines</label>
+            <label><input type="checkbox" id="layer-gas-pipelines" checked /> Gas Pipelines</label>
+            <label><input type="checkbox" id="layer-refineries" checked /> Refineries</label>
+            <label><input type="checkbox" id="layer-fields" checked /> Production Fields</label>
+            <label><input type="checkbox" id="layer-plants" checked /> Power Plants</label>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>TOP PRODUCERS</h2>
+          <div id="top-producers" class="producers-list"></div>
+        </section>
+
+        <section class="panel-section">
+          <h2>KARDASHEV SCALE</h2>
+          <div class="kardashev-info">
+            <p>Type 0.73 — Planetary civilization harnessing a significant fraction of available energy resources.</p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 73%"></div>
+            </div>
+            <p class="small">Target Type I: full planetary energy mastery (~10¹⁶–10¹⁷ W)</p>
+          </div>
+        </section>
+      </aside>
+
+      <!-- Map -->
+      <main id="map-container">
+        <div id="map"></div>
+        <div class="map-overlay">
+          <button id="btn-reset-view" class="hud-btn">RESET VIEW</button>
+        </div>
+      </main>
+
+      <!-- Right Panel / Detail -->
+      <aside class="panel right-panel" id="detail-panel">
+        <div id="detail-content">
+          <div class="empty-state">
+            <h2>ASSET INTEL</h2>
+            <p>Select a pipeline, refinery, field or plant on the map to view production statistics, capacity and trends.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Bottom Status -->
+    <footer class="bottom-bar">
+      <span>THE KARDASHEV v0.1 • Data: EIA-style aggregates + curated infrastructure • For observation & analysis</span>
+      <span id="clock"></span>
+    </footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

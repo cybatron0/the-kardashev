@@ -35,7 +35,6 @@ body {
   height: 100vh;
 }
 
-/* Top Bar */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -99,7 +98,6 @@ body {
   color: var(--success);
 }
 
-/* Main Layout */
 .main-layout {
   display: grid;
   grid-template-columns: 280px 1fr 320px;
@@ -238,7 +236,6 @@ body {
   box-shadow: 0 0 8px var(--accent);
 }
 
-/* Map */
 #map-container {
   position: relative;
   background: #0a1018;
@@ -275,7 +272,6 @@ body {
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
 }
 
-/* Detail Panel */
 #detail-content {
   height: 100%;
 }
@@ -354,7 +350,6 @@ body {
   margin-top: 0.5rem;
 }
 
-/* Bottom Bar */
 .bottom-bar {
   display: flex;
   justify-content: space-between;
@@ -366,7 +361,6 @@ body {
   font-family: var(--font-mono);
 }
 
-/* Leaflet overrides */
 .leaflet-container {
   background: #0a1018;
   font-family: var(--font-sans);
@@ -395,34 +389,32 @@ body {
   border-color: var(--border) !important;
 }
 
-/* Custom markers */
-.marker-refinery {
-  background: var(--oil);
-  border: 2px solid #fff;
+.custom-marker {
+  background: transparent;
+  border: none;
+}
+
+.marker-dot {
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
-  box-shadow: 0 0 10px var(--oil);
+  box-shadow: 0 0 12px currentColor, 0 0 4px rgba(0,0,0,0.8);
+}
+
+.marker-refinery {
+  border-radius: 50%;
+  box-shadow: 0 0 14px #ff8c00, 0 0 4px rgba(0,0,0,0.8);
 }
 
 .marker-field {
-  background: #ffcc00;
-  border: 2px solid #fff;
   border-radius: 3px;
-  width: 12px;
-  height: 12px;
-  box-shadow: 0 0 8px #ffcc00;
+  box-shadow: 0 0 12px #ffcc00, 0 0 4px rgba(0,0,0,0.8);
 }
 
 .marker-plant {
-  background: var(--success);
-  border: 2px solid #fff;
   border-radius: 2px;
-  width: 12px;
-  height: 12px;
+  box-shadow: 0 0 12px #00ff9d, 0 0 4px rgba(0,0,0,0.8);
 }
 
-/* Responsive */
 @media (max-width: 1100px) {
   .main-layout {
     grid-template-columns: 240px 1fr 280px;

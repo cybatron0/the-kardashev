@@ -1,4 +1,4 @@
-// THE KARDASHEV — Main Application Logic (v0.5)
+// THE KARDASHEV — Main Application Logic (v0.5.1)
 
 let map;
 let layers = {
@@ -45,12 +45,14 @@ function init() {
   if (pipeEl) pipeEl.textContent = PIPELINES.length;
   if (refEl) refEl.textContent = REFINERIES.length;
 
-  // Soft highlight Middle East on first load for orientation
+  // Soft highlight Middle East only after onboarding is dismissed / already visited
   setTimeout(() => {
-    if (!localStorage.getItem("kardashev_visited")) {
-      map.flyTo(REGIONS.middleeast.center, REGIONS.middleeast.zoom, { duration: 1.2 });
-    }
-  }, 800);
+    if (localStorage.getItem("kardashev_visited")) return;
+    // only fly if onboarding is already gone
+    const onb = document.getElementById("onboarding");
+    if (onb && onb.style.display !== "none" && !onb.hidden) return;
+    map.flyTo(REGIONS.middleeast.center, REGIONS.middleeast.zoom, { duration: 1.2 });
+  }, 1200);
 }
 
 function initMap() {
@@ -590,22 +592,52 @@ function renderAnalytics() {
 function renderTicker() {
   const track = document.getElementById("ticker-track");
   if (!track) return;
-  // Duplicate for seamless loop
   const items = [...INTEL_EVENTS, ...INTEL_EVENTS];
   track.innerHTML = items.map(e =>
     `<span class="ticker-item"><strong>${e.text}</strong><span class="ago">${e.ago}</span></span>`
   ).join("");
 }
 
+function closeOnboarding() {
+  const el = document.getElementById("onboarding");
+  if (!el) return;
+  el.hidden = true;
+  el.style.display = "none";
+  el.setAttribute("aria-hidden", "true");
+  localStorage.setItem("kardashev_visited", "1");
+}
+
 function maybeShowOnboarding() {
   const key = "kardashev_visited";
   if (localStorage.getItem(key)) return;
+
   const el = document.getElementById("onboarding");
   if (!el) return;
+
   el.hidden = false;
-  document.getElementById("onboarding-dismiss")?.addEventListener("click", () => {
-    el.hidden = true;
-    localStorage.setItem(key, "1");
+  el.style.display = "flex";
+  el.removeAttribute("aria-hidden");
+
+  const btn = document.getElementById("onboarding-dismiss");
+  if (btn) {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeOnboarding();
+    });
+  }
+
+  // Also allow clicking the dark backdrop to dismiss
+  el.addEventListener("click", (e) => {
+    if (e.target === el) closeOnboarding();
+  });
+
+  // Escape key
+  document.addEventListener("keydown", function onEsc(e) {
+    if (e.key === "Escape") {
+      closeOnboarding();
+      document.removeEventListener("keydown", onEsc);
+    }
   });
 }
 

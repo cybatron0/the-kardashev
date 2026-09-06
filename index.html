@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THE KARDASHEV — Planetary Energy Intelligence</title>
+  <meta name="description" content="Planetary Energy Intelligence System. Track global oil & gas production, pipelines, fields, refineries and power infrastructure through a Kardashev-scale lens." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://the-kardashev.vercel.app" />
+  <meta property="og:title" content="THE KARDASHEV — Planetary Energy Intelligence" />
+  <meta property="og:description" content="OSINT-style map of global energy infrastructure. Choropleth production, pipelines, fields, refineries, power plants + Kardashev framing." />
+  <meta property="og:image" content="https://the-kardashev.vercel.app/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="THE KARDASHEV — Planetary Energy Intelligence" />
+  <meta name="twitter:description" content="Global energy infrastructure intelligence with production choropleth and asset-level detail." />
+  <meta name="twitter:image" content="https://the-kardashev.vercel.app/og.png" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -34,8 +49,12 @@
           <span class="value" id="kardashev-type">0.73</span>
         </div>
         <div class="status-item">
-          <span class="label">GLOBAL OIL</span>
-          <span class="value" id="global-oil">~100 Mb/d</span>
+          <span class="label">GLOBAL LIQUIDS</span>
+          <span class="value" id="global-oil">~102 Mb/d</span>
+        </div>
+        <div class="status-item">
+          <span class="label">DATA AS OF</span>
+          <span class="value" id="data-as-of">Sep 2025</span>
         </div>
         <div class="status-item">
           <span class="label">SYSTEM</span>
@@ -44,92 +63,110 @@
       </div>
     </header>
 
+    <!-- Event ticker -->
+    <div class="ticker-bar" id="ticker-bar">
+      <div class="ticker-label">INTEL</div>
+      <div class="ticker-track" id="ticker-track"></div>
+    </div>
+
     <div class="main-layout">
-      <aside class="panel left-panel">
-        <section class="panel-section">
-          <h2>REGIONS</h2>
-          <div class="region-jumps" id="region-jumps">
-            <button data-region="namerica">N. America</button>
-            <button data-region="middleeast">Middle East</button>
-            <button data-region="europe">Europe</button>
-            <button data-region="asia">Asia</button>
-            <button data-region="samerica">S. America</button>
-            <button data-region="africa">Africa</button>
-          </div>
-        </section>
-
-        <section class="panel-section">
-          <h2>GLOBAL OVERVIEW</h2>
-          <div class="stat-grid">
-            <div class="stat-card">
-              <span class="stat-label">Oil Production</span>
-              <span class="stat-value" id="stat-oil">100.4</span>
-              <span class="stat-unit">Mb/d</span>
+      <aside class="panel left-panel" id="left-panel">
+        <button class="mobile-panel-toggle" id="toggle-left" aria-label="Toggle left panel">☰ Layers</button>
+        <div class="panel-inner">
+          <section class="panel-section">
+            <h2>REGIONS</h2>
+            <div class="region-jumps" id="region-jumps">
+              <button data-region="namerica">N. America</button>
+              <button data-region="middleeast">Middle East</button>
+              <button data-region="europe">Europe</button>
+              <button data-region="asia">Asia</button>
+              <button data-region="samerica">S. America</button>
+              <button data-region="africa">Africa</button>
             </div>
-            <div class="stat-card">
-              <span class="stat-label">Top Producer</span>
-              <span class="stat-value small">United States</span>
-              <span class="stat-unit">~21.1 Mb/d</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Major Pipelines</span>
-              <span class="stat-value" id="stat-pipelines">17</span>
-              <span class="stat-unit">tracked</span>
-            </div>
-            <div class="stat-card">
-              <span class="stat-label">Refineries</span>
-              <span class="stat-value" id="stat-refineries">12</span>
-              <span class="stat-unit">key hubs</span>
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <section class="panel-section">
-          <h2>LAYERS</h2>
-          <div class="layer-controls">
-            <label><input type="checkbox" id="layer-choropleth" checked /> Production Choropleth</label>
-            <label><input type="checkbox" id="layer-oil-pipelines" checked /> Oil Pipelines</label>
-            <label><input type="checkbox" id="layer-gas-pipelines" checked /> Gas Pipelines</label>
-            <label><input type="checkbox" id="layer-refineries" checked /> Refineries</label>
-            <label><input type="checkbox" id="layer-fields" checked /> Production Fields</label>
-            <label><input type="checkbox" id="layer-plants" checked /> Power Plants</label>
-          </div>
-        </section>
-
-        <section class="panel-section">
-          <h2>PIPELINE FILTER</h2>
-          <div class="filter-row">
-            <select id="filter-status">
-              <option value="all">All status</option>
-              <option value="operating">Operating</option>
-              <option value="damaged/idle">Damaged / Idle</option>
-            </select>
-          </div>
-        </section>
-
-        <section class="panel-section">
-          <h2>TOP PRODUCERS</h2>
-          <div id="top-producers" class="producers-list"></div>
-        </section>
-
-        <section class="panel-section">
-          <h2>KARDASHEV SCALE</h2>
-          <div class="kardashev-info">
-            <p>Type 0.73 — Planetary civilization harnessing a significant fraction of available energy resources.</p>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: 73%"></div>
+          <section class="panel-section">
+            <h2>GLOBAL OVERVIEW</h2>
+            <div class="stat-grid">
+              <div class="stat-card">
+                <span class="stat-label">Total Liquids</span>
+                <span class="stat-value" id="stat-oil">102</span>
+                <span class="stat-unit">Mb/d</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Top Producer</span>
+                <span class="stat-value small">United States</span>
+                <span class="stat-unit">~21.1 Mb/d</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Major Pipelines</span>
+                <span class="stat-value" id="stat-pipelines">17</span>
+                <span class="stat-unit">tracked</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-label">Refineries</span>
+                <span class="stat-value" id="stat-refineries">12</span>
+                <span class="stat-unit">key hubs</span>
+              </div>
             </div>
-            <p class="small">Target Type I: full planetary energy mastery (~10¹⁶–10¹⁷ W)</p>
-          </div>
-        </section>
+            <p class="metric-note">Metric: <strong>total petroleum &amp; other liquids</strong> (crude + NGLs + biofuels + refinery gains). Not crude-only.</p>
+          </section>
+
+          <section class="panel-section">
+            <h2>LAYERS</h2>
+            <div class="layer-controls">
+              <label><input type="checkbox" id="layer-choropleth" checked /> Production Choropleth</label>
+              <label><input type="checkbox" id="layer-oil-pipelines" checked /> Oil Pipelines</label>
+              <label><input type="checkbox" id="layer-gas-pipelines" checked /> Gas Pipelines</label>
+              <label><input type="checkbox" id="layer-refineries" checked /> Refineries</label>
+              <label><input type="checkbox" id="layer-fields" checked /> Production Fields</label>
+              <label><input type="checkbox" id="layer-plants" checked /> Power Plants</label>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <h2>PIPELINE FILTER</h2>
+            <div class="filter-row">
+              <select id="filter-status">
+                <option value="all">All status</option>
+                <option value="operating">Operating</option>
+                <option value="damaged/idle">Damaged / Idle</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="panel-section">
+            <h2>TOP PRODUCERS <span class="as-of">as of Sep 2025</span></h2>
+            <div id="top-producers" class="producers-list"></div>
+          </section>
+
+          <section class="panel-section">
+            <h2>KARDASHEV SCALE</h2>
+            <div class="kardashev-info">
+              <p>Type 0.73 — Planetary civilization harnessing a significant fraction of available energy resources.</p>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 73%"></div>
+              </div>
+              <p class="small">Target Type I: full planetary energy mastery (~10¹⁶–10¹⁷ W)</p>
+            </div>
+          </section>
+
+          <section class="panel-section sources-section">
+            <h2>SOURCES &amp; METHOD</h2>
+            <p class="sources-text">
+              Production figures are a curated snapshot aligned with EIA STEO / IEA / JODI total petroleum liquids series (not crude-only). Infrastructure locations and capacities drawn from public operator reports, GEM, and open mapping. Updated quarterly; last refresh <strong>Sep 2025</strong>. Not an official statistical release.
+            </p>
+          </section>
+        </div>
       </aside>
 
       <main id="map-container">
         <div id="map"></div>
         <div class="map-overlay top-left">
           <div class="legend" id="choropleth-legend">
-            <div class="legend-title">Oil Production (Mb/d)</div>
+            <div class="legend-title">Total liquids (Mb/d)</div>
             <div class="legend-scale" id="legend-scale"></div>
+            <div class="legend-note">Colorblind-safe sequential</div>
           </div>
         </div>
         <div class="map-overlay top-right">
@@ -146,36 +183,50 @@
         </div>
       </main>
 
-      <aside class="panel right-panel">
-        <div class="tabs">
-          <button class="tab active" data-tab="intel">ASSET INTEL</button>
-          <button class="tab" data-tab="analytics">ANALYTICS</button>
-        </div>
+      <aside class="panel right-panel" id="right-panel">
+        <button class="mobile-panel-toggle" id="toggle-right" aria-label="Toggle right panel">☰ Intel</button>
+        <div class="panel-inner">
+          <div class="tabs">
+            <button class="tab active" data-tab="intel">ASSET INTEL</button>
+            <button class="tab" data-tab="analytics">ANALYTICS</button>
+          </div>
 
-        <div id="tab-intel" class="tab-panel active">
-          <div id="detail-content">
-            <div class="empty-state">
-              <h2>ASSET INTEL</h2>
-              <p>Select a country, pipeline, refinery, field or plant on the map — or search — to inspect production, capacity and trends.</p>
+          <div id="tab-intel" class="tab-panel active">
+            <div id="detail-content">
+              <!-- Default global view populated by JS -->
             </div>
           </div>
-        </div>
 
-        <div id="tab-analytics" class="tab-panel">
-          <h3 class="analytics-title">Production Share</h3>
-          <div class="chart-container tall">
-            <canvas id="share-chart"></canvas>
+          <div id="tab-analytics" class="tab-panel">
+            <h3 class="analytics-title">Production Share <span class="as-of">top 8 · Sep 2025</span></h3>
+            <div class="chart-container tall">
+              <canvas id="share-chart"></canvas>
+            </div>
+            <h3 class="analytics-title">Capacity Snapshot</h3>
+            <div id="capacity-snapshot" class="capacity-list"></div>
           </div>
-          <h3 class="analytics-title">Capacity Snapshot</h3>
-          <div id="capacity-snapshot" class="capacity-list"></div>
         </div>
       </aside>
     </div>
 
     <footer class="bottom-bar">
-      <span>THE KARDASHEV v0.4 • Choropleth + Atlas polish • Curated infrastructure data</span>
+      <span>THE KARDASHEV v0.5 • Data as of Sep 2025 • Total petroleum liquids • Sources: EIA / JODI-aligned curated snapshot</span>
       <span id="clock"></span>
     </footer>
+  </div>
+
+  <!-- First-visit onboarding -->
+  <div id="onboarding" class="onboarding" hidden>
+    <div class="onboarding-card">
+      <h2>Welcome to THE KARDASHEV</h2>
+      <p>Planetary energy intelligence. Countries are colored by total petroleum liquids production. Pipelines, fields, refineries and plants are layered on top.</p>
+      <ul>
+        <li>Click any country or asset for detail</li>
+        <li>Use region jumps or search to navigate</li>
+        <li>Watch the INTEL ticker for status signals</li>
+      </ul>
+      <button id="onboarding-dismiss" class="hud-btn">Got it — show me the map</button>
+    </div>
   </div>
 
   <script src="data.js"></script>

@@ -1,4 +1,9 @@
-// THE KARDASHEV — Core Data Module (v0.4)
+// THE KARDASHEV — Core Data Module (v0.5)
+// Metric: total petroleum & other liquids (crude + NGLs + biofuels + refinery gains)
+// Vintage: September 2025 curated snapshot aligned with EIA STEO / JODI-style series
+
+const DATA_AS_OF = "Sep 2025";
+const DATA_METRIC = "total petroleum & other liquids";
 
 const PRODUCTION_DATA = [
   { country: "United States", code: "US", production: 21.1, lat: 39.8, lng: -98.5 },
@@ -23,232 +28,27 @@ const PRODUCTION_DATA = [
   { country: "Oman", code: "OM", production: 1.0, lat: 21.5, lng: 55.9 }
 ];
 
-// ISO-2 lookup for choropleth matching
-const PROD_BY_CODE = Object.fromEntries(
-  PRODUCTION_DATA.map(p => [p.code, p])
-);
+const PROD_BY_CODE = Object.fromEntries(PRODUCTION_DATA.map(p => [p.code, p]));
+const PROD_BY_NAME = Object.fromEntries(PRODUCTION_DATA.map(p => [p.country.toLowerCase(), p]));
 
-const PROD_BY_NAME = Object.fromEntries(
-  PRODUCTION_DATA.map(p => [p.country.toLowerCase(), p])
-);
-
-// All coords are [lat, lng] for Leaflet
 const PIPELINES = [
-  {
-    id: "keystone",
-    name: "Keystone Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "590,000 bpd",
-    length: "3,456 km",
-    operator: "TC Energy",
-    countries: ["Canada", "USA"],
-    coords: [
-      [50.95, -104.05], [49.0, -104.0], [46.8, -101.5], [44.4, -97.5],
-      [41.2, -97.0], [36.1, -95.9], [29.8, -95.0]
-    ]
-  },
-  {
-    id: "dakota-access",
-    name: "Dakota Access Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "570,000 bpd",
-    length: "1,886 km",
-    operator: "Energy Transfer",
-    countries: ["USA"],
-    coords: [
-      [47.5, -103.5], [46.8, -100.8], [45.5, -97.0], [43.5, -96.0],
-      [41.5, -93.5], [40.5, -91.0]
-    ]
-  },
-  {
-    id: "trans-mountain",
-    name: "Trans Mountain Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "890,000 bpd",
-    length: "1,150 km",
-    operator: "Trans Mountain Corp",
-    countries: ["Canada"],
-    coords: [
-      [53.5, -114.1], [52.9, -117.5], [52.1, -119.3], [50.7, -121.0], [49.3, -122.8]
-    ]
-  },
-  {
-    id: "enbridge-mainline",
-    name: "Enbridge Mainline",
-    type: "oil",
-    status: "operating",
-    capacity: "2.85 million bpd",
-    length: "5,353 km",
-    operator: "Enbridge",
-    countries: ["Canada", "USA"],
-    coords: [
-      [53.5, -114.1], [53.5, -110.0], [52.0, -105.0], [49.9, -97.0],
-      [48.0, -92.0], [46.5, -86.0], [42.5, -83.5]
-    ]
-  },
-  {
-    id: "colonial",
-    name: "Colonial Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "2.5 million bpd",
-    length: "8,850 km (system)",
-    operator: "Colonial Pipeline Co.",
-    countries: ["USA"],
-    coords: [
-      [29.8, -95.4], [30.2, -93.2], [30.0, -90.1], [30.7, -86.8],
-      [33.8, -84.4], [39.0, -77.0], [40.7, -74.0]
-    ]
-  },
-  {
-    id: "druzhba",
-    name: "Druzhba Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "1.2 million bpd",
-    length: "5,327 km",
-    operator: "Transneft",
-    countries: ["Russia", "Belarus", "Poland", "Germany", "Ukraine", "Czechia", "Hungary"],
-    coords: [
-      [54.7, 52.3], [53.2, 44.0], [52.3, 37.6], [52.4, 32.0],
-      [52.2, 24.0], [52.2, 21.0], [52.5, 14.4]
-    ]
-  },
-  {
-    id: "btc",
-    name: "Baku–Tbilisi–Ceyhan (BTC)",
-    type: "oil",
-    status: "operating",
-    capacity: "1.2 million bpd",
-    length: "1,768 km",
-    operator: "BP / SOCAR",
-    countries: ["Azerbaijan", "Georgia", "Turkey"],
-    coords: [
-      [40.4, 49.9], [41.3, 47.5], [41.7, 44.8], [41.6, 41.6],
-      [39.5, 36.8], [36.8, 35.3]
-    ]
-  },
-  {
-    id: "east-west",
-    name: "East-West Pipeline (Petroline)",
-    type: "oil",
-    status: "operating",
-    capacity: "5 million bpd",
-    length: "1,200 km",
-    operator: "Saudi Aramco",
-    countries: ["Saudi Arabia"],
-    coords: [
-      [26.3, 50.1], [26.0, 47.0], [25.5, 44.0], [24.0, 41.0], [22.5, 38.5]
-    ]
-  },
-  {
-    id: "sumed",
-    name: "SUMED Pipeline",
-    type: "oil",
-    status: "operating",
-    capacity: "2.5 million bpd",
-    length: "320 km",
-    operator: "SUMED",
-    countries: ["Egypt"],
-    coords: [[29.0, 33.0], [30.0, 31.2], [31.2, 29.9]]
-  },
-  {
-    id: "trans-alaska",
-    name: "Trans-Alaska Pipeline System",
-    type: "oil",
-    status: "operating",
-    capacity: "2.1 million bpd (design)",
-    length: "1,287 km",
-    operator: "Alyeska Pipeline",
-    countries: ["USA"],
-    coords: [
-      [70.3, -148.5], [68.0, -149.0], [64.8, -147.7], [61.2, -149.9], [61.1, -146.3]
-    ]
-  },
-  {
-    id: "cpc",
-    name: "Caspian Pipeline Consortium (CPC)",
-    type: "oil",
-    status: "operating",
-    capacity: "1.4 million bpd",
-    length: "1,510 km",
-    operator: "CPC",
-    countries: ["Kazakhstan", "Russia"],
-    coords: [[47.1, 51.9], [45.0, 45.0], [44.7, 37.5]]
-  },
-  {
-    id: "espo",
-    name: "Eastern Siberia–Pacific Ocean (ESPO)",
-    type: "oil",
-    status: "operating",
-    capacity: "1.6 million bpd",
-    length: "4,857 km",
-    operator: "Transneft",
-    countries: ["Russia"],
-    coords: [
-      [56.0, 100.0], [55.0, 110.0], [52.0, 120.0], [48.5, 135.0], [42.8, 132.0]
-    ]
-  },
-  {
-    id: "nord-stream",
-    name: "Nord Stream (legacy)",
-    type: "gas",
-    status: "damaged/idle",
-    capacity: "55 bcm/y",
-    length: "1,224 km",
-    operator: "Nord Stream AG",
-    countries: ["Russia", "Germany"],
-    coords: [[60.5, 28.0], [55.5, 15.0], [54.5, 13.5]]
-  },
-  {
-    id: "power-of-siberia",
-    name: "Power of Siberia",
-    type: "gas",
-    status: "operating",
-    capacity: "38 bcm/y",
-    length: "~3,000 km",
-    operator: "Gazprom / CNPC",
-    countries: ["Russia", "China"],
-    coords: [
-      [60.0, 120.0], [55.0, 125.0], [50.0, 127.0], [45.0, 128.0], [40.0, 120.0]
-    ]
-  },
-  {
-    id: "yamal-europe",
-    name: "Yamal–Europe",
-    type: "gas",
-    status: "operating",
-    capacity: "33 bcm/y",
-    length: "4,196 km",
-    operator: "Gazprom",
-    countries: ["Russia", "Belarus", "Poland", "Germany"],
-    coords: [[67.0, 70.0], [55.0, 30.0], [52.5, 20.0], [52.5, 13.5]]
-  },
-  {
-    id: "turkstream",
-    name: "TurkStream",
-    type: "gas",
-    status: "operating",
-    capacity: "31.5 bcm/y",
-    length: "930 km",
-    operator: "Gazprom",
-    countries: ["Russia", "Turkey"],
-    coords: [[44.5, 36.5], [41.5, 30.0], [41.0, 29.0]]
-  },
-  {
-    id: "blue-stream",
-    name: "Blue Stream",
-    type: "gas",
-    status: "operating",
-    capacity: "16 bcm/y",
-    length: "1,213 km",
-    operator: "Gazprom / BOTAŞ",
-    countries: ["Russia", "Turkey"],
-    coords: [[44.5, 38.0], [42.0, 35.0], [41.0, 31.0]]
-  }
+  { id: "keystone", name: "Keystone Pipeline", type: "oil", status: "operating", capacity: "590,000 bpd", length: "3,456 km", operator: "TC Energy", countries: ["Canada", "USA"], coords: [[50.95, -104.05], [49.0, -104.0], [46.8, -101.5], [44.4, -97.5], [41.2, -97.0], [36.1, -95.9], [29.8, -95.0]] },
+  { id: "dakota-access", name: "Dakota Access Pipeline", type: "oil", status: "operating", capacity: "570,000 bpd", length: "1,886 km", operator: "Energy Transfer", countries: ["USA"], coords: [[47.5, -103.5], [46.8, -100.8], [45.5, -97.0], [43.5, -96.0], [41.5, -93.5], [40.5, -91.0]] },
+  { id: "trans-mountain", name: "Trans Mountain Pipeline", type: "oil", status: "operating", capacity: "890,000 bpd", length: "1,150 km", operator: "Trans Mountain Corp", countries: ["Canada"], coords: [[53.5, -114.1], [52.9, -117.5], [52.1, -119.3], [50.7, -121.0], [49.3, -122.8]] },
+  { id: "enbridge-mainline", name: "Enbridge Mainline", type: "oil", status: "operating", capacity: "2.85 million bpd", length: "5,353 km", operator: "Enbridge", countries: ["Canada", "USA"], coords: [[53.5, -114.1], [53.5, -110.0], [52.0, -105.0], [49.9, -97.0], [48.0, -92.0], [46.5, -86.0], [42.5, -83.5]] },
+  { id: "colonial", name: "Colonial Pipeline", type: "oil", status: "operating", capacity: "2.5 million bpd", length: "8,850 km (system)", operator: "Colonial Pipeline Co.", countries: ["USA"], coords: [[29.8, -95.4], [30.2, -93.2], [30.0, -90.1], [30.7, -86.8], [33.8, -84.4], [39.0, -77.0], [40.7, -74.0]] },
+  { id: "druzhba", name: "Druzhba Pipeline", type: "oil", status: "operating", capacity: "1.2 million bpd", length: "5,327 km", operator: "Transneft", countries: ["Russia", "Belarus", "Poland", "Germany", "Ukraine", "Czechia", "Hungary"], coords: [[54.7, 52.3], [53.2, 44.0], [52.3, 37.6], [52.4, 32.0], [52.2, 24.0], [52.2, 21.0], [52.5, 14.4]] },
+  { id: "btc", name: "Baku–Tbilisi–Ceyhan (BTC)", type: "oil", status: "operating", capacity: "1.2 million bpd", length: "1,768 km", operator: "BP / SOCAR", countries: ["Azerbaijan", "Georgia", "Turkey"], coords: [[40.4, 49.9], [41.3, 47.5], [41.7, 44.8], [41.6, 41.6], [39.5, 36.8], [36.8, 35.3]] },
+  { id: "east-west", name: "East-West Pipeline (Petroline)", type: "oil", status: "operating", capacity: "5 million bpd", length: "1,200 km", operator: "Saudi Aramco", countries: ["Saudi Arabia"], coords: [[26.3, 50.1], [26.0, 47.0], [25.5, 44.0], [24.0, 41.0], [22.5, 38.5]] },
+  { id: "sumed", name: "SUMED Pipeline", type: "oil", status: "operating", capacity: "2.5 million bpd", length: "320 km", operator: "SUMED", countries: ["Egypt"], coords: [[29.0, 33.0], [30.0, 31.2], [31.2, 29.9]] },
+  { id: "trans-alaska", name: "Trans-Alaska Pipeline System", type: "oil", status: "operating", capacity: "2.1 million bpd (design)", length: "1,287 km", operator: "Alyeska Pipeline", countries: ["USA"], coords: [[70.3, -148.5], [68.0, -149.0], [64.8, -147.7], [61.2, -149.9], [61.1, -146.3]] },
+  { id: "cpc", name: "Caspian Pipeline Consortium (CPC)", type: "oil", status: "operating", capacity: "1.4 million bpd", length: "1,510 km", operator: "CPC", countries: ["Kazakhstan", "Russia"], coords: [[47.1, 51.9], [45.0, 45.0], [44.7, 37.5]] },
+  { id: "espo", name: "Eastern Siberia–Pacific Ocean (ESPO)", type: "oil", status: "operating", capacity: "1.6 million bpd", length: "4,857 km", operator: "Transneft", countries: ["Russia"], coords: [[56.0, 100.0], [55.0, 110.0], [52.0, 120.0], [48.5, 135.0], [42.8, 132.0]] },
+  { id: "nord-stream", name: "Nord Stream (legacy)", type: "gas", status: "damaged/idle", capacity: "55 bcm/y", length: "1,224 km", operator: "Nord Stream AG", countries: ["Russia", "Germany"], coords: [[60.5, 28.0], [55.5, 15.0], [54.5, 13.5]] },
+  { id: "power-of-siberia", name: "Power of Siberia", type: "gas", status: "operating", capacity: "38 bcm/y", length: "~3,000 km", operator: "Gazprom / CNPC", countries: ["Russia", "China"], coords: [[60.0, 120.0], [55.0, 125.0], [50.0, 127.0], [45.0, 128.0], [40.0, 120.0]] },
+  { id: "yamal-europe", name: "Yamal–Europe", type: "gas", status: "operating", capacity: "33 bcm/y", length: "4,196 km", operator: "Gazprom", countries: ["Russia", "Belarus", "Poland", "Germany"], coords: [[67.0, 70.0], [55.0, 30.0], [52.5, 20.0], [52.5, 13.5]] },
+  { id: "turkstream", name: "TurkStream", type: "gas", status: "operating", capacity: "31.5 bcm/y", length: "930 km", operator: "Gazprom", countries: ["Russia", "Turkey"], coords: [[44.5, 36.5], [41.5, 30.0], [41.0, 29.0]] },
+  { id: "blue-stream", name: "Blue Stream", type: "gas", status: "operating", capacity: "16 bcm/y", length: "1,213 km", operator: "Gazprom / BOTAŞ", countries: ["Russia", "Turkey"], coords: [[44.5, 38.0], [42.0, 35.0], [41.0, 31.0]] }
 ];
 
 const REFINERIES = [
@@ -311,16 +111,16 @@ const REGIONS = {
   africa: { center: [5, 20], zoom: 3.5 }
 };
 
-// Choropleth color scale (Mb/d)
+// Colorblind-safe sequential (blue → teal → yellow)
 const CHORO_BREAKS = [0, 1, 2, 4, 8, 15, 25];
 const CHORO_COLORS = [
   "#0d1b2a",
-  "#1b3a4b",
-  "#1e5f74",
-  "#2a8a9e",
-  "#3cb8c9",
-  "#5ce0ef",
-  "#00e5ff"
+  "#1a4a6e",
+  "#1e6b8a",
+  "#2a9aaa",
+  "#3ec4a8",
+  "#7dd87a",
+  "#f0e76b"
 ];
 
 function getChoroColor(prod) {
@@ -330,3 +130,15 @@ function getChoroColor(prod) {
   }
   return CHORO_COLORS[0];
 }
+
+// Curated status signals (illustrative OSINT-style events)
+const INTEL_EVENTS = [
+  { text: "Nord Stream — reported idle / damaged", ago: "ongoing" },
+  { text: "CPC (Caspian) — operating near nameplate", ago: "updated 2d ago" },
+  { text: "Permian Basin — production holding elevated", ago: "updated 5d ago" },
+  { text: "Druzhba — flows continuing under monitoring", ago: "updated 1d ago" },
+  { text: "Trans Mountain — expansion capacity online", ago: "updated 3d ago" },
+  { text: "Ghawar — steady output reported", ago: "updated 4d ago" },
+  { text: "Zaporizhzhia Nuclear — offline status persists", ago: "ongoing" },
+  { text: "Colonial Pipeline — normal operations", ago: "updated 6h ago" }
+];

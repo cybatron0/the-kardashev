@@ -1,26 +1,39 @@
-// THE KARDASHEV — Core Data Module (improved density + accuracy)
+// THE KARDASHEV — Core Data Module (v0.4)
 
 const PRODUCTION_DATA = [
-  { country: "United States", code: "US", production: 21.1, lat: 31.0, lng: -100.0 },
+  { country: "United States", code: "US", production: 21.1, lat: 39.8, lng: -98.5 },
   { country: "Saudi Arabia", code: "SA", production: 11.4, lat: 24.0, lng: 45.0 },
-  { country: "Russia", code: "RU", production: 10.7, lat: 61.0, lng: 90.0 },
-  { country: "Canada", code: "CA", production: 6.2, lat: 56.0, lng: -106.0 },
-  { country: "Iran", code: "IR", production: 5.2, lat: 32.0, lng: 53.0 },
-  { country: "Iraq", code: "IQ", production: 4.4, lat: 33.0, lng: 44.0 },
-  { country: "China", code: "CN", production: 4.3, lat: 35.0, lng: 105.0 },
-  { country: "United Arab Emirates", code: "AE", production: 4.2, lat: 24.0, lng: 54.0 },
-  { country: "Brazil", code: "BR", production: 3.9, lat: -14.0, lng: -51.0 },
+  { country: "Russia", code: "RU", production: 10.7, lat: 61.5, lng: 105.0 },
+  { country: "Canada", code: "CA", production: 6.2, lat: 56.1, lng: -106.3 },
+  { country: "Iran", code: "IR", production: 5.2, lat: 32.4, lng: 53.7 },
+  { country: "Iraq", code: "IQ", production: 4.4, lat: 33.2, lng: 43.7 },
+  { country: "China", code: "CN", production: 4.3, lat: 35.9, lng: 104.2 },
+  { country: "United Arab Emirates", code: "AE", production: 4.2, lat: 23.4, lng: 53.8 },
+  { country: "Brazil", code: "BR", production: 3.9, lat: -14.2, lng: -51.9 },
   { country: "Kuwait", code: "KW", production: 2.8, lat: 29.3, lng: 47.5 },
   { country: "Kazakhstan", code: "KZ", production: 2.1, lat: 48.0, lng: 68.0 },
-  { country: "Norway", code: "NO", production: 2.0, lat: 62.0, lng: 10.0 },
+  { country: "Norway", code: "NO", production: 2.0, lat: 60.5, lng: 8.5 },
   { country: "Qatar", code: "QA", production: 1.8, lat: 25.3, lng: 51.2 },
-  { country: "Mexico", code: "MX", production: 1.8, lat: 23.0, lng: -102.0 },
-  { country: "Nigeria", code: "NG", production: 1.8, lat: 9.0, lng: 8.0 }
+  { country: "Mexico", code: "MX", production: 1.8, lat: 23.6, lng: -102.6 },
+  { country: "Nigeria", code: "NG", production: 1.8, lat: 9.1, lng: 8.7 },
+  { country: "Angola", code: "AO", production: 1.2, lat: -11.2, lng: 17.9 },
+  { country: "Algeria", code: "DZ", production: 1.1, lat: 28.0, lng: 1.7 },
+  { country: "Libya", code: "LY", production: 1.2, lat: 26.3, lng: 17.2 },
+  { country: "Venezuela", code: "VE", production: 0.8, lat: 6.4, lng: -66.6 },
+  { country: "Oman", code: "OM", production: 1.0, lat: 21.5, lng: 55.9 }
 ];
+
+// ISO-2 lookup for choropleth matching
+const PROD_BY_CODE = Object.fromEntries(
+  PRODUCTION_DATA.map(p => [p.code, p])
+);
+
+const PROD_BY_NAME = Object.fromEntries(
+  PRODUCTION_DATA.map(p => [p.country.toLowerCase(), p])
+);
 
 // All coords are [lat, lng] for Leaflet
 const PIPELINES = [
-  // ——— OIL ———
   {
     id: "keystone",
     name: "Keystone Pipeline",
@@ -179,8 +192,6 @@ const PIPELINES = [
       [56.0, 100.0], [55.0, 110.0], [52.0, 120.0], [48.5, 135.0], [42.8, 132.0]
     ]
   },
-
-  // ——— GAS ———
   {
     id: "nord-stream",
     name: "Nord Stream (legacy)",
@@ -290,3 +301,32 @@ const SAMPLE_HISTORY = {
 };
 
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+
+const REGIONS = {
+  namerica: { center: [45, -100], zoom: 3.2 },
+  middleeast: { center: [27, 48], zoom: 4.5 },
+  europe: { center: [52, 15], zoom: 4.0 },
+  asia: { center: [35, 105], zoom: 3.2 },
+  samerica: { center: [-15, -60], zoom: 3.5 },
+  africa: { center: [5, 20], zoom: 3.5 }
+};
+
+// Choropleth color scale (Mb/d)
+const CHORO_BREAKS = [0, 1, 2, 4, 8, 15, 25];
+const CHORO_COLORS = [
+  "#0d1b2a",
+  "#1b3a4b",
+  "#1e5f74",
+  "#2a8a9e",
+  "#3cb8c9",
+  "#5ce0ef",
+  "#00e5ff"
+];
+
+function getChoroColor(prod) {
+  if (prod == null || prod <= 0) return "#0a1520";
+  for (let i = CHORO_BREAKS.length - 1; i >= 0; i--) {
+    if (prod >= CHORO_BREAKS[i]) return CHORO_COLORS[i];
+  }
+  return CHORO_COLORS[0];
+}

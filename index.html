@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>THE KARDASHEV — Global Energy Intelligence</title>
+  <title>THE KARDASHEV — Planetary Energy Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -19,6 +22,12 @@
           <p class="tagline">Planetary Energy Intelligence System</p>
         </div>
       </div>
+
+      <div class="search-wrap">
+        <input type="search" id="global-search" placeholder="Search pipelines, fields, countries…" autocomplete="off" />
+        <div id="search-results" class="search-results" hidden></div>
+      </div>
+
       <div class="status-indicators">
         <div class="status-item">
           <span class="label">CIVILIZATION TYPE</span>
@@ -37,6 +46,18 @@
 
     <div class="main-layout">
       <aside class="panel left-panel">
+        <section class="panel-section">
+          <h2>REGIONS</h2>
+          <div class="region-jumps" id="region-jumps">
+            <button data-region="namerica">N. America</button>
+            <button data-region="middleeast">Middle East</button>
+            <button data-region="europe">Europe</button>
+            <button data-region="asia">Asia</button>
+            <button data-region="samerica">S. America</button>
+            <button data-region="africa">Africa</button>
+          </div>
+        </section>
+
         <section class="panel-section">
           <h2>GLOBAL OVERVIEW</h2>
           <div class="stat-grid">
@@ -66,11 +87,23 @@
         <section class="panel-section">
           <h2>LAYERS</h2>
           <div class="layer-controls">
+            <label><input type="checkbox" id="layer-choropleth" checked /> Production Choropleth</label>
             <label><input type="checkbox" id="layer-oil-pipelines" checked /> Oil Pipelines</label>
             <label><input type="checkbox" id="layer-gas-pipelines" checked /> Gas Pipelines</label>
             <label><input type="checkbox" id="layer-refineries" checked /> Refineries</label>
             <label><input type="checkbox" id="layer-fields" checked /> Production Fields</label>
             <label><input type="checkbox" id="layer-plants" checked /> Power Plants</label>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>PIPELINE FILTER</h2>
+          <div class="filter-row">
+            <select id="filter-status">
+              <option value="all">All status</option>
+              <option value="operating">Operating</option>
+              <option value="damaged/idle">Damaged / Idle</option>
+            </select>
           </div>
         </section>
 
@@ -93,23 +126,54 @@
 
       <main id="map-container">
         <div id="map"></div>
-        <div class="map-overlay">
+        <div class="map-overlay top-left">
+          <div class="legend" id="choropleth-legend">
+            <div class="legend-title">Oil Production (Mb/d)</div>
+            <div class="legend-scale" id="legend-scale"></div>
+          </div>
+        </div>
+        <div class="map-overlay top-right">
           <button id="btn-reset-view" class="hud-btn">RESET VIEW</button>
+        </div>
+        <div class="map-overlay bottom-left">
+          <div class="infra-legend">
+            <span class="swatch oil"></span> Oil
+            <span class="swatch gas"></span> Gas
+            <span class="swatch field"></span> Field
+            <span class="swatch refinery"></span> Refinery
+            <span class="swatch plant"></span> Plant
+          </div>
         </div>
       </main>
 
-      <aside class="panel right-panel" id="detail-panel">
-        <div id="detail-content">
-          <div class="empty-state">
-            <h2>ASSET INTEL</h2>
-            <p>Select a pipeline, refinery, field or plant on the map to view production statistics, capacity and trends.</p>
+      <aside class="panel right-panel">
+        <div class="tabs">
+          <button class="tab active" data-tab="intel">ASSET INTEL</button>
+          <button class="tab" data-tab="analytics">ANALYTICS</button>
+        </div>
+
+        <div id="tab-intel" class="tab-panel active">
+          <div id="detail-content">
+            <div class="empty-state">
+              <h2>ASSET INTEL</h2>
+              <p>Select a country, pipeline, refinery, field or plant on the map — or search — to inspect production, capacity and trends.</p>
+            </div>
           </div>
+        </div>
+
+        <div id="tab-analytics" class="tab-panel">
+          <h3 class="analytics-title">Production Share</h3>
+          <div class="chart-container tall">
+            <canvas id="share-chart"></canvas>
+          </div>
+          <h3 class="analytics-title">Capacity Snapshot</h3>
+          <div id="capacity-snapshot" class="capacity-list"></div>
         </div>
       </aside>
     </div>
 
     <footer class="bottom-bar">
-      <span>THE KARDASHEV v0.2 • Improved visibility • Data: curated infrastructure</span>
+      <span>THE KARDASHEV v0.4 • Choropleth + Atlas polish • Curated infrastructure data</span>
       <span id="clock"></span>
     </footer>
   </div>

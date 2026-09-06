@@ -692,6 +692,12 @@ body {
   padding: 1.5rem;
 }
 
+/* Force hide when attribute or inline style is set */
+.onboarding[hidden],
+.onboarding[aria-hidden="true"] {
+  display: none !important;
+}
+
 .onboarding-card {
   background: rgba(8, 18, 35, 0.98);
   border: 1px solid var(--border);

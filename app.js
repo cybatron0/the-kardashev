@@ -1,4 +1,4 @@
-// THE KARDASHEV — Main Application Logic (v0.5.1)
+// THE KARDASHEV — Main Application Logic (v0.5.2)
 
 let map;
 let layers = {
@@ -45,10 +45,8 @@ function init() {
   if (pipeEl) pipeEl.textContent = PIPELINES.length;
   if (refEl) refEl.textContent = REFINERIES.length;
 
-  // Soft highlight Middle East only after onboarding is dismissed / already visited
   setTimeout(() => {
     if (localStorage.getItem("kardashev_visited")) return;
-    // only fly if onboarding is already gone
     const onb = document.getElementById("onboarding");
     if (onb && onb.style.display !== "none" && !onb.hidden) return;
     map.flyTo(REGIONS.middleeast.center, REGIONS.middleeast.zoom, { duration: 1.2 });
@@ -63,9 +61,10 @@ function initMap() {
     maxZoom: 10
   }).setView([25, 20], 2.2);
 
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 18,
-    attribution: "&copy; OpenStreetMap &copy; CARTO"
+  // Reliable free dark basemap (Esri World Dark Gray Canvas)
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 16,
+    attribution: "Tiles &copy; Esri"
   }).addTo(map);
 
   Object.values(layers).forEach(l => l.addTo(map));
@@ -90,7 +89,7 @@ function loadChoropleth() {
             weight: 0.55,
             opacity: 1,
             color: "#1a3a4a",
-            fillOpacity: prod ? 0.75 : 0.22
+            fillOpacity: prod ? 0.78 : 0.25
           };
         },
         onEachFeature: (feature, layer) => {
@@ -107,7 +106,7 @@ function loadChoropleth() {
 
           layer.on({
             mouseover: e => {
-              e.target.setStyle({ weight: 1.5, color: "#00e5ff", fillOpacity: 0.88 });
+              e.target.setStyle({ weight: 1.5, color: "#00e5ff", fillOpacity: 0.9 });
               e.target.bringToFront();
             },
             mouseout: e => { countryLayer.resetStyle(e.target); },
@@ -627,12 +626,10 @@ function maybeShowOnboarding() {
     });
   }
 
-  // Also allow clicking the dark backdrop to dismiss
   el.addEventListener("click", (e) => {
     if (e.target === el) closeOnboarding();
   });
 
-  // Escape key
   document.addEventListener("keydown", function onEsc(e) {
     if (e.key === "Escape") {
       closeOnboarding();
